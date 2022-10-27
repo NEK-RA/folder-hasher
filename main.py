@@ -1,6 +1,7 @@
+#!/usr/bin/env python3
 import argparse
 import hashlib
-import pathlib
+from pathlib import Path
 
 # parse arguments of script - https://docs.python.org/3/library/argparse.html
 # work with paths  - https://docs.python.org/3/library/pathlib.html
@@ -15,10 +16,14 @@ def gethasher(method):
   else:
     return hashlib.md5()
 
-
-hashing = gethasher("sha256")
-with open("main.py","rb") as source:
-    data = source.read()
-    hashing.update(data)
+def hashfile(path, method):
+  hashing = gethasher(method)
+  with open("main.py","rb") as source:
+    file = source.read()
+    hashing.update(file)
     result = hashing.hexdigest()
-    print(f"{result} - main.py")
+    print(f"{result} - {path.resolve()}")
+
+
+path = Path("main.py")
+hashfile(path,"sha1")
