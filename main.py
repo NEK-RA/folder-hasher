@@ -7,6 +7,7 @@ from pathlib import Path
 # work with paths  - https://docs.python.org/3/library/pathlib.html
 # read file in binary format - https://docs.python.org/3/library/io.html
 # hashing - https://docs.python.org/3/library/hashlib.html
+# list of available hashing algorithms for current python interpretter - hashlib.algorithms_available
 
 # function which returns concrete hashing algorithm
 # depending on passed value
