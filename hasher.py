@@ -9,22 +9,11 @@ from pathlib import Path
 # hashing - https://docs.python.org/3/library/hashlib.html
 # list of available hashing algorithms for current python interpretter - hashlib.algorithms_available
 
-# function which returns concrete hashing algorithm
-# depending on passed value
-# made to let user choose target hashing algorithm
-# currently made without match-case to make script work in older versions
-def get_hasher(method):
-  if method == 'sha1':
-    return hashlib.sha1()
-  elif method == 'sha256':
-    return hashlib.sha256()
-  else:
-    return hashlib.md5()
-
 # file hashing function
 def hash_file(path, method):
+  print(f"Calculating hashsum for {path}")
   # take required hashing algorithm
-  hashing = get_hasher(method)
+  hashing = hashlib.new(method)
   # open target file for reading in binary mode
   with path.open(mode="rb") as source:
     file = source.read()
@@ -111,33 +100,76 @@ def final_preparation(path,start,level,absolute):
   # returning path too, as it will be used to pass to hash function
   return (hashfile, relative, path)
   
-
+# function where raw tasks are processed into final stage and then hashed
 def hash_tasks(tasksets,startpath,method,absolute):
+  # dict used to avoid hashfile paths duplication
   final_tasks = dict()
+  # iterating through raw tasks
   for taskset in tasksets:
+    # iterating through file for current raw task
     for task in taskset["tasks"]:
+      # preparing hashfile path, path which will be shown in hashfile
+      # and absolute path to file, which will be actually used in hashing function
       hashfile, relative, path = final_preparation(task,startpath,taskset["depth"],absolute)
+      # if hashfile not yet appeared while processing tasks, then add it and related task
+      # else just append prepared elements to list of tasks for this hashfile
       if hashfile not in final_tasks.keys():
         final_tasks[hashfile] = [dict(name=relative,fullpath=path)]
       else:
         final_tasks[hashfile].append(dict(name=relative,fullpath=path))
-
+  # iterating through hashfile paths
   for key in final_tasks.keys():
+    # all strings will firstly be written into content variable
+    # so later will be just one writing to file
     content = ""
+    # adding method as extension of hashfile
     hashfilepath = f"{key}.{method}"
     for file in final_tasks[key]:
+      # calculating hashsum and addint to the end of current hashfile
       checksum = hash_file(file["fullpath"],method)
       content += f"{checksum}  {file['name']}\n"
-    print(f"\n\nGoing to write into {hashfilepath} next content:\n{content}")
+    # when all hashsums were calculated, writing them to file
+    with open(hashfilepath,"w") as result:
+      result.write(content)
 
-# pathstr = "/usr/share/wallpapers"
-# pathstr = "/usr/lib/dpkg/methods/apt"
-# pathstr = "/usr/lib/dpkg/"
-pathstr = "~/deta-template"
-if "~" in pathstr:
-  pathstr = pathstr.replace("~",str(Path.home()))
-path = Path(pathstr).resolve()
-sets = recursive_childs(path,3)
-print(f"Hashing folder: {pathstr}\nAlgorithm: md5\nUsing depth: 3\nUsing absolute paths: False")
-hash_tasks(sets, path.name, "md5",True)
-#print( hashfile(path,"sha1") )
+# entrypoint after processing the arguments, may be used if script imported somewhere
+def hasher(pathstr,method="md5",depth=0,absolute=False):
+  # summary
+  print(f"Hashing folder: {pathstr}\nAlgorithm: {method}\nUsing depth: {depth}\nUsing absolute paths: {absolute}")
+  # replacing ~ with actual $HOME path
+  if "~" in pathstr:
+    pathstr = pathstr.replace("~",str(Path.home()))
+  # resolving absolute path for case if relative was provided
+  path = Path(pathstr).resolve()
+  # check if path doesn't exist
+  if not path.exists():
+    exit(f"ERROR: Path {path} does not exist")
+  # if depth specified as negative, it should be replaced by 0
+  if depth < 0:
+    depth = 0
+  # gathering all files in this folder
+  sets = recursive_childs(path,depth)
+  # check if method is available
+  if method not in hashlib.algorithms_available:
+    exit(f"ERROR: Hashing algorithm {method} is not available in current python interpreter")
+  # hash the folder  
+  hash_tasks(sets, path.name, method, absolute)
+  
+if __name__=="__main__":
+  shortinfo="""
+  Calculate hashes for all files in the folder (including nested folders) with specifying depth, method and if absolute paths to files should be used or not
+  """
+  methodinfo = "Hashing algorithm (default: md5)"
+  depthinfo = "Depth for placing hashfiles, using name of this folder with hash suffix, like: myfolder.md5 (default: 0 - inside specified folder)"
+  absinfo = "Option to write absolute paths to files into hashfile, or not. By default relative paths will be used."
+  pathinfo = "Path to folder which content should be hashed"
+  
+  parser = argparse.ArgumentParser(description=shortinfo)
+
+  parser.add_argument("-m","--method", dest="method", type=str, default="md5", choices=hashlib.algorithms_available, help=methodinfo)
+  parser.add_argument("-d","--depth", dest="depth", type=int, default=0, help=depthinfo)
+  parser.add_argument("-a", "--absolute", dest="absolute", action="store_true", help=absinfo)
+  parser.add_argument('path', metavar='path', type=str, help='path to file or folder')
+
+  args = parser.parse_args()
+  hasher(args.path, args.method, args.depth, args.absolute)
