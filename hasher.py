@@ -2,12 +2,14 @@
 import argparse
 import hashlib
 from pathlib import Path
+from os import sep
 
 # parse arguments of script - https://docs.python.org/3/library/argparse.html
 # work with paths  - https://docs.python.org/3/library/pathlib.html
 # read file in binary format - https://docs.python.org/3/library/io.html
 # hashing - https://docs.python.org/3/library/hashlib.html
 # list of available hashing algorithms for current python interpretter - hashlib.algorithms_available
+# os.sep is platform specific separator for paths, which is "/" on linux/unix and "\\" on windows
 
 # file hashing function
 def hash_file(path, method):
@@ -74,7 +76,7 @@ def recursive_childs(path,depth,level=0):
   return paths
 
 def final_preparation(path,start,level,absolute):
-  levels = str(path).split("/")
+  levels = str(path).split(sep)
   index = levels.index(start)
   cut = None
   # checking if paths on required level are folders, not files
@@ -85,10 +87,10 @@ def final_preparation(path,start,level,absolute):
   else:
     cut = index+1
   # getting part which will be folder where hashfile should be located
-  hashfile = "/".join(levels[:cut])
+  hashfile = sep.join(levels[:cut])
   # adding folder name one more time, as it will be hashfile name actually
   # extension will be added to it in hash_tasks function, right before writing hashes to file
-  hashfile += f"/{levels[cut-1]}"
+  hashfile += f"{sep}{levels[cut-1]}"
   # relative path to file, which should be written to hashfile
   # if absolute=true, then absolute path will be kept for file
   # otherwise relative will be used
@@ -96,7 +98,7 @@ def final_preparation(path,start,level,absolute):
   if absolute:
     relative = str(path)
   else:
-    relative = "/".join(levels[cut:])
+    relative = sep.join(levels[cut:])
   # returning path too, as it will be used to pass to hash function
   return (hashfile, relative, path)
   
