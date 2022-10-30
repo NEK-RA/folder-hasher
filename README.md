@@ -7,7 +7,24 @@ Depends only on python runtime and openssl
 
 # Usage
 
-`python3 hasher.py --method METHOD --depth DEPTH --absolute /absolute/or/relative/path`
+```
+python3 hasher.py --method METHOD --depth DEPTH --absolute /absolute/or/relative/path
+
+# or
+
+python3 hasher.py -m METHDOD -d DEPTH -a relative/path
+```
+
+## Examples
+
+```
+python3 hasher.py -m sha1 -d 0 ~/git/folder-hasher
+
+#or
+
+python3 hasher.py --method sha256 --depth
+
+```
 
 Shortcuts:
 
@@ -102,4 +119,9 @@ Firstly was written for friend, but I guess somebody else may find it useful :)
 # What's next
 
 - [ ] Make ability to verify files via hashsums by something like `-c path` (`--check path`)
+- [ ] Allow to specify more than one hashing algorithm
+- [ ] Allow to specify more than one folder
+- [ ] Make ability to specify exclusions (like excluding `.git` folder from tasks)
+- [ ] Check if threading will be useful
+- [ ] Check if bundle produced by [PyInstaller](https://pyinstaller.org/en/stable/index.html) or [Nuitka](https://nuitka.net/index.html) will be small enough
 - [ ] Think a bit later about it and see if anything may be improved
