@@ -18,12 +18,21 @@ python3 hasher.py -m METHDOD -d DEPTH -a relative/path
 ## Examples
 
 ```
+# Hash some folder inside $HOME, with depth=0 there will be only folder-hasher.sha1
+# with hashes for all files inside and in all nested folders
 python3 hasher.py -m sha1 -d 0 ~/git/folder-hasher
 
-#or
+# or
+# something.sha256 will have hashes of file something/*
+# all folders inside something, like something/folder_a will have folder_a.sha256
+# with hashes of all files inside it and in all nested folders
+python3 hasher.py --method sha256 --depth 1 /mnt/something 
 
-python3 hasher.py --method sha256 --depth
-
+# or
+# Hash all files in current folder including nested folders
+# assuming this executed inside some folder_b, there will appear
+# folder_b.md5 with hashes for all files inside and in all nested folders
+python3 hasher.py . 
 ```
 
 Shortcuts:
@@ -122,6 +131,7 @@ Firstly was written for friend, but I guess somebody else may find it useful :)
 - [ ] Allow to specify more than one hashing algorithm
 - [ ] Allow to specify more than one folder
 - [ ] Make ability to specify exclusions (like excluding `.git` folder from tasks)
+- [ ] Store progress in some file, to be able to resume process in case it was terminated for some reason 
 - [ ] Check if threading will be useful
 - [ ] Check if bundle produced by [PyInstaller](https://pyinstaller.org/en/stable/index.html) or [Nuitka](https://nuitka.net/index.html) will be small enough
 - [ ] Think a bit later about it and see if anything may be improved
